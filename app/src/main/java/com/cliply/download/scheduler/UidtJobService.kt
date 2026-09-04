@@ -6,6 +6,7 @@ import android.app.job.JobScheduler
 import android.app.job.JobService
 import android.content.ComponentName
 import android.os.PersistableBundle
+import android.util.Log
 import com.cliply.download.engine.DownloadJobRunner
 import com.cliply.download.engine.DownloadTransferManager
 import com.cliply.download.notification.CliplyNotificationManager
@@ -18,6 +19,7 @@ class UidtTransferExecutor(private val scheduler: JobScheduler) : TransferExecut
         val extras = PersistableBundle().apply { putString(UidtJobService.EXTRA_JOB_ID, jobId) }
         val info = JobInfo.Builder(jobId.hashCode(), ComponentName(context, UidtJobService::class.java)).setUserInitiated(true).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setEstimatedNetworkBytes(1L, 100L * 1024L * 1024L).setExtras(extras).build()
         check(scheduler.schedule(info) == JobScheduler.RESULT_SUCCESS) { "Unable to schedule UIDT transfer" }
+        Log.i("CliplyTransfer", "uidt_scheduled jobId=$jobId")
     }
     override fun cancel(context: android.content.Context, jobId: String) { scheduler.cancel(jobId.hashCode()) }
 }
@@ -33,6 +35,7 @@ class UidtJobService : JobService() {
     override fun onStartJob(params: JobParameters): Boolean {
         val id = params.extras.getString(EXTRA_JOB_ID) ?: run { jobFinished(params, false); return false }
         if (!params.isUserInitiatedJob) { jobFinished(params, false); return false }
+        Log.i("CliplyTransfer", "uidt_started jobId=$id systemJobId=${params.jobId}")
         val notification = notifications.progressNotification(id, 0, null, 0)
         setNotification(params, id.hashCode(), notification, JobService.JOB_END_NOTIFICATION_POLICY_REMOVE)
         val work = scope.launch { try { runner.run(id); jobFinished(params, false) } catch (_: CancellationException) { jobFinished(params, false) } catch (_: Throwable) { jobFinished(params, false) } finally { jobs.remove(params.jobId) } }

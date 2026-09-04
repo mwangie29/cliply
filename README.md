@@ -4,7 +4,7 @@
 
 ## Project status
 
-Milestone 2.1 — API-aware background transfer execution
+Milestone 3 — integration validation and hardening
 
 ## Tech stack
 
@@ -22,14 +22,16 @@ Kotlin, Jetpack Compose, Hilt, Room, DataStore, Retrofit, OkHttp, Coil, Android 
 ./gradlew test
 ```
 
-## Implemented
+## Implemented and hardened
 
 The project supports a controlled development download flow from Android Share Target through URL validation, `DownloadJob` creation, API-aware transfer selection, streamed OkHttp transfer, persisted progress, notifications, cancellation propagation, and MediaStore publication with `IS_PENDING` protection.
 
 Android 13 selects the compatibility foreground-service executor. Android 14+ selects the registered, user-initiated `JobService` path using `JobInfo.Builder.setUserInitiated(true)`. Both paths invoke the same `DownloadJobRunner`, transfer engine, notification facade, repository, and MediaStore publisher.
 
-The controlled provider uses a configurable development-only test URL. Instagram, TikTok, and Facebook extraction remain intentionally unimplemented.
+Milestone 3 hardening includes a certificate-valid HTTPS controlled media URL, lifecycle diagnostics without full URL logging, guaranteed temporary-file cleanup on failure/cancellation, persistence of active temporary paths, Room persistence of completion metadata, destructive migration support for the development schema, and a Room-backed Downloads history ViewModel.
 
-## Verification status
+## Verification
 
-The Gradle debug build and unit tests pass. No Android emulator or physical device was available, so device-level verification of Share Target, UIDT scheduling, notification rendering, and MediaStore output has not been performed.
+The final `./gradlew clean test assembleDebug --no-daemon` run passed. The test suite contains 14 passing unit tests. No Android emulator or physical device could complete installation: the newly created API 33 emulator booted partially but Package Manager failed with a null `StorageManager`, and the headless emulator later exited with code 139. Consequently, Share Target, UIDT runtime scheduling, notification rendering, MediaStore output, and connected Android tests remain device-unverified.
+
+The controlled source is configured in `BuildConfig.TEST_MEDIA_URL` and remains development-only. Instagram, TikTok, and Facebook extraction remain intentionally unimplemented.
