@@ -1,21 +1,23 @@
 package com.cliply.download.notification
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import com.cliply.MainActivity
 import com.cliply.R
 
 class CliplyNotificationManager(private val context: Context) {
-    companion object { const val CHANNEL_ID = "cliply_downloads"; const val EXTRA_JOB_ID = "job_id" }
+    companion object { const val CHANNEL_ID = "cliply_downloads" }
     private val manager = context.getSystemService(NotificationManager::class.java)
     init { manager.createNotificationChannel(NotificationChannel(CHANNEL_ID, "Downloads", NotificationManager.IMPORTANCE_LOW)) }
-    fun progressNotification(jobId: String, downloaded: Long, total: Long?, speed: Long): android.app.Notification { val progress = if (total != null && total > 0) ((downloaded * 100) / total).toInt() else 0; return base("Downloading video", jobId).setOngoing(true).setOnlyAlertOnce(true).setProgress(100, progress, total == null).setContentText("${format(downloaded)} / ${total?.let(::format) ?: "?"}   ${formatSpeed(speed)}").build() }
+    fun progressNotification(jobId: String, downloaded: Long, total: Long?, speed: Long): Notification { val progress = if (total != null && total > 0) ((downloaded * 100) / total).toInt() else 0; return base("Downloading video", jobId).setOngoing(true).setOnlyAlertOnce(true).setProgress(100, progress, total == null).setContentText("${format(downloaded)} / ${total?.let(::format) ?: "?"}   ${formatSpeed(speed)}").build() }
     fun showProgress(jobId: String, downloaded: Long, total: Long?, speed: Long) { manager.notify(jobId.hashCode(), progressNotification(jobId, downloaded, total, speed)) }
-    fun showComplete(jobId: String, name: String, uri: android.net.Uri?) { val open = PendingIntent.getActivity(context, jobId.hashCode(), Intent(context, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE); manager.notify(jobId.hashCode(), base("Download complete", jobId).setOngoing(false).setContentText(name).setContentIntent(open).build()) }
+    fun showComplete(jobId: String, name: String, uri: Uri?) { val builder = base("Download complete", jobId).setOngoing(false).setContentText(name).setAutoCancel(true); if (uri != null) { val open = PendingIntent.getActivity(context, jobId.hashCode(), Intent(Intent.ACTION_VIEW, uri).setDataAndType(uri, "video/mp4").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE); val share = PendingIntent.getActivity(context, jobId.hashCode() + 1, Intent.createChooser(Intent(Intent.ACTION_SEND).setType("video/mp4").putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), "Share video"), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE); builder.addAction(NotificationCompat.Action(0, "Open", open)).addAction(NotificationCompat.Action(0, "Share", share)) }; manager.notify(jobId.hashCode(), builder.build()) }
     fun showFailure(jobId: String, message: String) { manager.notify(jobId.hashCode(), base("Download failed", jobId).setOngoing(false).setContentText(message).build()) }
     fun cancel(jobId: String) { manager.cancel(jobId.hashCode()) }
     private fun base(title: String, jobId: String) = NotificationCompat.Builder(context, CHANNEL_ID).setSmallIcon(R.drawable.cliply_logo_placeholder).setContentTitle("Cliply").setSubText(title).setStyle(NotificationCompat.BigTextStyle().bigText(title)).setAutoCancel(true)

@@ -2,36 +2,66 @@
 
 **Share it. Keep scrolling.**
 
-## Project status
+Cliply is an Android runtime-test build for validating the core share-and-save experience. It is **not a production release**. This build uses a controlled HTTPS test media source; Instagram, TikTok, and Facebook extraction are **not implemented**.
 
-Milestone 3 — integration validation and hardening
+## Current runtime test
 
-## Tech stack
+The controlled test URL is:
 
-Kotlin, Jetpack Compose, Hilt, Room, DataStore, Retrofit, OkHttp, Coil, Android JobScheduler, UIDT, notifications, and MediaStore.
-
-## Build
-
-```bash
-./gradlew assembleDebug
+```text
+https://github.com/mediaelement/mediaelement-files/raw/master/big_buck_bunny.mp4
 ```
 
-## Tests
+The intended in-app test is:
+
+1. Open Cliply.
+2. Confirm the controlled test URL is in the Home field.
+3. Tap **Download**.
+4. Observe the download state and notification.
+5. Leave Cliply and continue using the phone.
+6. Wait for completion.
+7. Open **Cliply → Downloads**.
+8. Confirm the completed item appears in Room-backed history.
+9. Use the completion notification’s **Open** or **Share** action.
+
+The Share Target test is:
+
+1. Open a browser or another app containing the test URL.
+2. Tap **Share**.
+3. Select **Cliply**.
+4. Confirm Cliply receives the URL.
+5. Confirm the download begins without manually pressing Download.
+6. Return to the originating app.
+7. Wait for the notification and completion.
+
+## Architecture and compatibility
+
+- Android 13 / API 33 uses the compatibility foreground-service transfer path.
+- Android 14–16 / API 34–36 uses the user-initiated data-transfer `JobService` path.
+- Both paths share the same `DownloadJobRunner`, streamed OkHttp transfer engine, Room repository, notification facade, and MediaStore publisher.
+- MediaStore publication uses `IS_PENDING` so incomplete files are not exposed as completed media.
+- The Home flow creates a persisted `DownloadJob`; Downloads history is loaded from Room rather than placeholder data.
+
+## Build configuration
+
+| Setting | Value |
+|---|---:|
+| compileSdk | 36 |
+| targetSdk | 36 |
+| minSdk | 33 |
+| versionName | 0.3.0 |
+| versionCode | 3 |
+
+Build locally with:
 
 ```bash
-./gradlew test
+./gradlew clean test assembleDebug --no-daemon
 ```
 
-## Implemented and hardened
+## Scope and limitations
 
-The project supports a controlled development download flow from Android Share Target through URL validation, `DownloadJob` creation, API-aware transfer selection, streamed OkHttp transfer, persisted progress, notifications, cancellation propagation, and MediaStore publication with `IS_PENDING` protection.
+This is a runtime-test build for Android hardware. It does not include production social-platform extraction, authentication, subscriptions, cloud history, batch downloads, or content editing. Device-level verification depends on the tester’s Android phone; the development emulator environment used for automated work could not complete APK installation because Android Package Manager failed with a `StorageManager` initialization error.
 
-Android 13 selects the compatibility foreground-service executor. Android 14+ selects the registered, user-initiated `JobService` path using `JobInfo.Builder.setUserInitiated(true)`. Both paths invoke the same `DownloadJobRunner`, transfer engine, notification facade, repository, and MediaStore publisher.
+## Repository
 
-Milestone 3 hardening includes a certificate-valid HTTPS controlled media URL, lifecycle diagnostics without full URL logging, guaranteed temporary-file cleanup on failure/cancellation, persistence of active temporary paths, Room persistence of completion metadata, destructive migration support for the development schema, and a Room-backed Downloads history ViewModel.
-
-## Verification
-
-The final `./gradlew clean test assembleDebug --no-daemon` run passed. The test suite contains 14 passing unit tests. No Android emulator or physical device could complete installation: the newly created API 33 emulator booted partially but Package Manager failed with a null `StorageManager`, and the headless emulator later exited with code 139. Consequently, Share Target, UIDT runtime scheduling, notification rendering, MediaStore output, and connected Android tests remain device-unverified.
-
-The controlled source is configured in `BuildConfig.TEST_MEDIA_URL` and remains development-only. Instagram, TikTok, and Facebook extraction remain intentionally unimplemented.
+[https://github.com/mwangie29/cliply](https://github.com/mwangie29/cliply)
