@@ -4,11 +4,11 @@
 
 ## Project status
 
-MVP foundation
+Milestone 2 — controlled download vertical slice
 
 ## Tech stack
 
-Kotlin, Jetpack Compose, Hilt, Room, DataStore, Retrofit, OkHttp, Coil.
+Kotlin, Jetpack Compose, Hilt, Room, DataStore, Retrofit, OkHttp, Coil, Android notifications, MediaStore.
 
 ## Build
 
@@ -22,6 +22,12 @@ Kotlin, Jetpack Compose, Hilt, Room, DataStore, Retrofit, OkHttp, Coil.
 ./gradlew test
 ```
 
-## Current scope
+## Implemented in Milestone 2
 
-Project foundation only. Platform extraction, real media resolution, background transfer, MediaStore publishing, authentication, billing, and cloud sync are intentionally deferred to the next implementation phase.
+The project now supports the controlled development flow from Android Share Target through URL validation, `DownloadJob` creation, streamed OkHttp transfer, persisted progress, notification updates, cancellation abstraction, and MediaStore publication with `IS_PENDING` protection.
+
+The controlled provider uses a configurable development-only test URL. Instagram, TikTok, and Facebook extraction remain intentionally unimplemented.
+
+## Current limitations
+
+The current transfer execution uses the Android foreground-service compatibility boundary for the user-initiated transfer. API-aware strategy interfaces exist, but a dedicated Android 14+ UIDT `JobService` implementation and device-level verification remain follow-up work. Notification permission is requested on Android 13+ and denial does not block navigation.

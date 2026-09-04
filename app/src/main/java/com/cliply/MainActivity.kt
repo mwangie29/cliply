@@ -1,8 +1,12 @@
 package com.cliply
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.navigation.compose.*
 import com.cliply.core.ui.components.*
 import com.cliply.core.ui.theme.*
@@ -21,6 +24,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); setContent { CliplyTheme { CliplyApp() } } } }
 
 @Composable fun CliplyApp() {
+    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(Unit) { if (Build.VERSION.SDK_INT >= 33) notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }
     val nav = rememberNavController()
     val current = nav.currentBackStackEntryAsState().value?.destination?.route ?: "home"
     Scaffold(bottomBar = { CliplyBottomNavigation(current.replaceFirstChar { it.uppercase() }) { nav.navigate(it.lowercase()) { launchSingleTop = true } } }, containerColor = CliplyBackground) { padding ->
