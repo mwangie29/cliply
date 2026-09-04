@@ -8,7 +8,8 @@ import com.cliply.domain.repository.DownloadRepository
 import com.cliply.domain.usecase.CreateDownloadJobUseCase
 import com.cliply.download.engine.*
 import com.cliply.download.notification.CliplyNotificationManager
-import com.cliply.download.scheduler.AndroidTransferExecutor
+import com.cliply.download.scheduler.TransferExecutor
+import com.cliply.download.scheduler.TransferExecutorFactory
 import com.cliply.download.storage.MediaStorePublisher
 import dagger.Module
 import dagger.Provides
@@ -30,6 +31,6 @@ object AppModule {
     @Provides @Singleton fun testProvider(): TestMediaProvider = ControlledTestMediaProvider()
     @Provides @Singleton fun notifications(@ApplicationContext context: Context) = CliplyNotificationManager(context)
     @Provides @Singleton fun publisher(@ApplicationContext context: Context) = MediaStorePublisher(context.contentResolver)
-    @Provides @Singleton fun executor() = AndroidTransferExecutor()
+    @Provides @Singleton fun executor(@ApplicationContext context: Context): TransferExecutor = TransferExecutorFactory(context).create()
     @Provides fun createDownloadJob(repository: DownloadRepository) = CreateDownloadJobUseCase(repository)
 }
