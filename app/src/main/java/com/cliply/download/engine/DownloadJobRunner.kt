@@ -41,7 +41,7 @@ class DownloadJobRunner @Inject constructor(private val repository: DownloadRepo
                     val completedTemp = temp ?: error("Missing temporary file")
                     val extension = variant.mimeType.substringAfter('/', "mp4").replace("x-", "")
                     val name = "cliply_${jobId.take(8)}.$extension"
-                    val uri = publisher.publish(completedTemp, name)
+                    val uri = publisher.publish(completedTemp, name, variant.mimeType)
                     repository.update(updated.copy(status = DownloadStatus.COMPLETED, completedAt = java.time.Instant.now(), temporaryFilePath = null, mediaStoreUri = uri?.toString()))
                     notifications.showComplete(jobId, name, uri, variant.mimeType)
                     Log.i(TAG, "transfer_completed id=$jobId")

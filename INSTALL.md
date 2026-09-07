@@ -1,10 +1,28 @@
-# Install Cliply Milestone 4 Build
+# Install Cliply Milestone 5 Build
 
-Cliply is a debug build intended for testing on an Android phone. It is not a production release and is intended for media the user has the right or permission to save.
+Cliply is a debug build intended for testing on an Android 13+ phone. It is not a production release and is intended for media the user has the right or permission to save.
 
-## Install
+## Build locally
 
-Open the Cliply repository at <https://github.com/mwangie29/cliply>. If a Milestone 4 release is available, open **Releases**, download its APK, open the downloaded file on the phone, allow installation from that source if Android asks, and install Cliply. If no Milestone 4 release is available yet, use the latest APK published in the repository or the task attachment.
+From the Cliply project directory:
+
+```bash
+./gradlew clean test assembleDebug --no-daemon
+```
+
+The APK is generated at:
+
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+Install it on a connected physical device with Android Debug Bridge:
+
+```bash
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+The current development environment had no connected physical device, so the runtime procedures below remain a test plan rather than completed evidence.
 
 ## Direct-media test
 
@@ -14,21 +32,39 @@ Open the Cliply repository at <https://github.com/mwangie29/cliply>. If a Milest
    `https://filesamples.com/samples/video/mp4/sample_640x360.mp4`
 
 3. Tap **Download**.
-4. Confirm the notification identifies a download in progress.
-5. Leave Cliply and wait for completion.
-6. Open **Cliply → Downloads**.
-7. Confirm the completed direct-media item remains listed after reopening Cliply.
-8. Use **Open** to launch the media through Android’s standard compatible player selection.
-9. Use **Share** to open Android’s native Sharesheet.
+4. Confirm that the download begins.
+5. Leave Cliply and return to the originating app.
+6. Observe the Cliply progress notification.
+7. Lock the phone if practical and wait for completion.
+8. Open **Cliply → Downloads**.
+9. Confirm the completed item appears with plausible size and `COMPLETED` status.
+10. Confirm the file appears in `Movies/Cliply` through MediaStore/gallery.
+11. Use **Open** and verify playback through Android’s normal compatible-player flow.
+12. Use **Share** and verify Android’s standard Sharesheet receives the content URI.
 
-The resolver validates the HTTPS response and media MIME type before transferring the actual media URL. The direct-media source is not a social-platform extractor.
+The source itself was independently downloaded during Milestone 5 preparation and identified as a valid MP4/MOV container. That result does not prove that the Android app completed the same flow on a device.
 
 ## Share Target test
 
-Use an Android app that can share the direct media URL as `text/plain`. Tap **Share**, select **Cliply**, and confirm that Cliply receives the URL and starts its background resolution/download workflow. Return to the original app and observe the Cliply notification.
+From an Android application that can share text URLs:
 
-Instagram, TikTok, and Facebook shared-page links are not supported by this milestone. Cliply will report an unsupported-resolution failure rather than substitute controlled test media.
+1. Share the direct media URL.
+2. Select **Cliply**.
+3. Confirm Cliply appears as an `ACTION_SEND` text target.
+4. Confirm a `DownloadJob` is created.
+5. Confirm the Share Target finishes quickly and returns to the source app.
+6. Observe the Cliply notification and wait for completion.
 
-## Cancellation and failure
+Instagram, TikTok, and Facebook shared-page URLs are intentionally unsupported in this milestone. Cliply must show an unsupported message and must not substitute controlled test media.
 
-Start a download and exercise the available cancellation path. The expected result is `CANCELLED`, removal or update of the notification, deletion of the temporary file, and no incomplete MediaStore item. For an invalid or unavailable direct-media response, the expected result is `FAILED` with a user-safe message and no stuck downloading state.
+## Cancellation test
+
+Start a direct-media download and invoke the available cancellation path. Confirm that the transfer stops, the job becomes `CANCELLED`, the temporary file is removed, no falsely completed MediaStore row remains, and the notification is stopped or cancelled.
+
+## Failure test
+
+Use an allowlisted direct-media-shaped URL that is unreachable or returns a non-media response. Confirm that the job becomes `FAILED`, the user sees a readable safe error, no successful item appears in Downloads, and no temporary or corrupted MediaStore file remains.
+
+## Physical-device status
+
+Physical-device installation, launcher icon rendering, background continuation, notifications, MediaStore, playback, Open, Sharesheet, cancellation, failure, and Share Target behavior are not claimed as verified until they have been exercised on real Android hardware.
