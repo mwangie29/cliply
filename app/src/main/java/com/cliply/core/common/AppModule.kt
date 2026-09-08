@@ -23,13 +23,14 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-    @Provides @Singleton fun database(@ApplicationContext context: Context): CliplyDatabase = Room.databaseBuilder(context, CliplyDatabase::class.java, "cliply.db").addMigrations(MIGRATION_1_2, MIGRATION_2_3).fallbackToDestructiveMigration().build()
+    @Provides @Singleton fun database(@ApplicationContext context: Context): CliplyDatabase = Room.databaseBuilder(context, CliplyDatabase::class.java, "cliply.db").addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).fallbackToDestructiveMigration().build()
     @Provides fun dao(db: CliplyDatabase): DownloadJobDao = db.downloadJobDao()
     @Provides @Singleton fun repository(dao: DownloadJobDao): DownloadRepository = DownloadRepositoryImpl(dao)
     @Provides @Singleton fun settings(@ApplicationContext context: Context) = SettingsRepository(context)
     @Provides @Singleton fun httpClient() = OkHttpClient()
     @Provides @Singleton fun transfer(client: OkHttpClient): DownloadTransferManager = OkHttpDownloadTransferManager(client)
     @Provides @Singleton fun mediaResolverRegistry(client: OkHttpClient): MediaResolverRegistry = MediaResolverRegistry(listOf(ControlledTestMediaResolver(com.cliply.BuildConfig.TEST_MEDIA_URL), DirectHttpsMediaResolver(client)))
+    @Provides @Singleton fun mediaSourceResolverRegistry(client: OkHttpClient): MediaSourceResolverRegistry = MediaSourceResolverRegistry(listOf(DirectMediaSourceResolver(DirectHttpsMediaResolver(client)), AuthorizedInstagramSourceResolver(UnconfiguredAuthorizedInstagramResolver())))
     @Provides @Singleton fun notifications(@ApplicationContext context: Context) = CliplyNotificationManager(context)
     @Provides @Singleton fun publisher(@ApplicationContext context: Context) = MediaStorePublisher(context.contentResolver)
     @Provides @Singleton fun executor(@ApplicationContext context: Context): TransferExecutor = TransferExecutorFactory(context).create()

@@ -22,6 +22,6 @@ class MediaSourceBoundaryTest {
     @Test fun authorizedInstagramPlaceholderFailsClosed() {
         val result = UnconfiguredAuthorizedInstagramResolver().unavailable()
         assertTrue(result is ResolveResult.Failure)
-        assertEquals("AUTHORIZED_INSTAGRAM_NOT_CONFIGURED", result.code)
+        assertEquals(com.cliply.domain.model.ResolutionFailureCode.AUTHORIZED_INSTAGRAM_NOT_CONFIGURED, result.code)
     }
 }

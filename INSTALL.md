@@ -68,9 +68,9 @@ Instagram Reel/page URLs, TikTok page URLs, and Facebook page/video URLs must be
 
 ## Future Instagram integration
 
-The repository contains an `AuthorizedInstagramResolver` contract and a fail-closed placeholder only. It does not contain a Meta login flow, credentials, backend, App Review approval, or Instagram media resolver.
+The repository contains the request-scoped `MediaSourceResolver` contract, a unified resolver registry, an `AuthorizedInstagramResolver` contract, typed provider failures, and a fail-closed placeholder. It does not contain a Meta login flow, credentials, encrypted token vault, backend, App Review approval, or live Instagram media resolver.
 
-Any future implementation must be restricted to authorized Instagram professional-account media and official Meta-provided media URLs. If Meta does not provide `media_url`, Cliply must report the media as unavailable rather than scraping or bypassing Instagram protections.
+Any future implementation must be restricted to authorized Instagram professional-account media and official Meta-provided media URLs. The Android app must receive only a non-secret account reference and normalized resolution result. If Meta does not provide `media_url`, Cliply must report the media as unavailable rather than scraping or bypassing Instagram protections. The current registry returns `AUTHORIZED_INSTAGRAM_NOT_CONFIGURED` and never falls back to controlled media.
 
 ## Verification boundary
 

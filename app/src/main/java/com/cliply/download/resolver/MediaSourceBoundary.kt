@@ -1,6 +1,5 @@
 package com.cliply.download.resolver
 
-import android.net.Uri
 import com.cliply.domain.model.ResolveResult
 import com.cliply.domain.model.ResolutionFailureCode
 
@@ -20,14 +19,14 @@ interface AuthorizedInstagramResolver {
 }
 
 data class AuthorizedInstagramRequest(
-    val permalink: Uri,
+    val permalink: String,
     val authorizedAccountReference: String
 )
 
 /** Explicit placeholder: it fails closed and can never return controlled or scraped media. */
 class UnconfiguredAuthorizedInstagramResolver : AuthorizedInstagramResolver {
     fun unavailable(): ResolveResult.Failure = ResolveResult.Failure(
-        ResolutionFailureCode.AUTHORIZED_INSTAGRAM_NOT_CONFIGURED.name,
+        ResolutionFailureCode.AUTHORIZED_INSTAGRAM_NOT_CONFIGURED,
         "Authorized Instagram access is not configured for this account."
     )
     override suspend fun resolve(request: AuthorizedInstagramRequest): ResolveResult = unavailable()

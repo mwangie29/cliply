@@ -63,8 +63,14 @@ The generic resolver layer contains:
 - `MediaSourceCapability`
 - `AuthorizedInstagramResolver` future contract
 - `UnconfiguredAuthorizedInstagramResolver` fail-closed placeholder
+- `MediaSourceResolver` request-scoped contract
+- `MediaSourceResolverRegistry`
+- `DirectMediaSourceResolver` and `AuthorizedInstagramSourceResolver` adapters
+- Typed provider/authentication failures such as `MEDIA_NOT_AVAILABLE_THROUGH_PROVIDER`, `AUTH_REAUTH_REQUIRED`, and `PROVIDER_RATE_LIMITED`
 
-The existing transfer engine, state machine, notification system, Room history, and MediaStore publication remain the shared execution path for any future compliant resolver.
+`DownloadJob` now carries non-secret `resolutionSource`, provider resolution reference, authorized-account reference, and optional resolution expiry metadata. Room migration 3→4 preserves existing history while adding these fields. The existing transfer engine, state machine, notification system, Room history, and MediaStore publication remain the shared execution path for any future compliant resolver.
+
+The unified registry is currently fail-closed for Instagram: it contains no Meta client, OAuth implementation, token store, backend call, or live Instagram resolver. This is intentional until official access, App Review scope, backend security controls, and legal/privacy review are complete.
 
 ## Build configuration
 
