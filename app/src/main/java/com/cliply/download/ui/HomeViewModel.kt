@@ -18,6 +18,6 @@ class HomeViewModel @Inject constructor(private val createDownloadJob: CreateDow
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
     private val validator = UrlValidator()
-    fun startDownload(rawUrl: String) { val result = validator.validate(rawUrl); val normalized = result.normalizedUrl; if (!result.isValid || normalized == null) { _message.value = "Enter a valid HTTPS media URL"; return }; if (!resolverRegistry.canResolve(normalized)) { _message.value = "This type of link isn't supported yet."; return }; viewModelScope.launch { val job = createDownloadJob(normalized.toString()); executor.start(context, job.id, job.sourceUrl); _message.value = "Download started" } }
+    fun startDownload(rawUrl: String, onStarted: (String) -> Unit) { val result = validator.validate(rawUrl); val normalized = result.normalizedUrl; if (!result.isValid || normalized == null) { _message.value = "Enter a valid HTTPS media URL"; return }; if (!resolverRegistry.canResolve(normalized)) { _message.value = "This type of link isn't supported yet."; return }; viewModelScope.launch { val job = createDownloadJob(normalized.toString()); executor.start(context, job.id, job.sourceUrl); _message.value = "Download started"; onStarted(job.id) } }
     fun clearMessage() { _message.value = null }
 }

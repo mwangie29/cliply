@@ -12,5 +12,5 @@ data class DownloadJob(val id: String = UUID.randomUUID().toString(), val source
 
 data class ResolveRequest(val url: Uri)
 sealed interface ResolveResult { data class Success(val media: ResolvedMedia): ResolveResult; data class Failure(val code: String, val message: String): ResolveResult }
-enum class ResolutionFailureCode { UNSUPPORTED_PLATFORM, INVALID_URL, MEDIA_NOT_FOUND, ACCESS_DENIED, RESOLUTION_UNAVAILABLE, NETWORK_ERROR, INVALID_MEDIA_RESPONSE }
+enum class ResolutionFailureCode { UNSUPPORTED_PLATFORM, INVALID_URL, MEDIA_NOT_FOUND, ACCESS_DENIED, RESOLUTION_UNAVAILABLE, AUTHORIZED_INSTAGRAM_NOT_CONFIGURED, NETWORK_ERROR, INVALID_MEDIA_RESPONSE }
 class MediaResolutionException(val code: ResolutionFailureCode, override val message: String) : IllegalStateException(message)

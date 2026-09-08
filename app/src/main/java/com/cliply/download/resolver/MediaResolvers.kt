@@ -7,8 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.net.URI
-import com.cliply.share.SupportedHosts
 
 interface MediaResolver {
     fun canResolve(url: Uri): Boolean
@@ -28,7 +26,7 @@ class MediaResolverRegistry(private val resolvers: List<MediaResolver>) {
 class DirectHttpsMediaResolver(private val client: OkHttpClient) : MediaResolver {
     private val allowedMimePrefixes = setOf("video/", "audio/")
     override fun canResolve(url: Uri): Boolean = canResolveComponents(url.scheme, url.host, url.path)
-    fun canResolveComponents(scheme: String?, host: String?, path: String?): Boolean = scheme == "https" && host?.lowercase() in SupportedHosts.all && isDirectMediaPath(path.orEmpty())
+    fun canResolveComponents(scheme: String?, host: String?, path: String?): Boolean = assessMediaSource(scheme, host, path).capability == MediaSourceCapability.DIRECT_MEDIA_URL
     override suspend fun resolve(url: Uri): ResolvedMedia = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(url.toString()).head().build()
         val response = runCatching { client.newCall(request).execute() }.getOrElse { throw MediaResolutionException(ResolutionFailureCode.NETWORK_ERROR, "Cliply couldn't resolve this link right now.") }
@@ -44,7 +42,6 @@ class DirectHttpsMediaResolver(private val client: OkHttpClient) : MediaResolver
             ResolvedMedia("direct-${url.toString().hashCode()}", Platform.UNKNOWN, title, null, mime, null, null, null, size, listOf(MediaVariant("Original", null, null, mime, size, url.toString(), null)), null, supportsRange, url.toString())
         }
     }
-    private fun isDirectMediaPath(path: String): Boolean = path.substringAfterLast('.', "").lowercase() in setOf("mp4", "mov", "m4v", "webm", "mkv", "mp3", "m4a", "wav", "ogg")
 }
 
 /** Development-only resolver retained for deterministic tests; it never handles social URLs. */
